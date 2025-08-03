@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Candorada/CSIA2025/issues"
   },
-  "homepage": "https://github.com/Candorada/CSIA2025#readme"
+  "homepage": "https://github.com/Candorada/CSIA2025#readme",
+  "dependencies": {
+    "nodemon": "^3.1.10"
+  }
 }
