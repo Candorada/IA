@@ -1,0 +1,42 @@
+:root{
+    --topbar-height: 4rem;
+    --mid-margin:.5rem;
+}
+#topbar{
+    background: red;
+    height: var(--topbar-height);
+    display: flex;
+}
+#grid{
+    background: blue;
+    height: calc(100vh - var(--topbar-height));
+}
+#settings{
+    width: var(--topbar-height);
+    height: var(--topbar-height);
+}
+#nodes{
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 1rem var(--mid-margin);
+}
+body{
+    margin:0px;
+}
+.node{
+    border:none;
+    margin-right: var(--mid-margin);
+    width: fit-content;
+    height: 100%;
+    border-radius: .2rem;
+}
+.selected{
+    outline: 2px solid black;
+}
+.bulk{
+    font-weight: bolder;
+}
+.bulk.selected{
+    outline: .2rem solid gray;
+}

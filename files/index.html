@@ -4,8 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="./files/main.css">
 </head>
 <body>
-    
+    <div id = topbar>
+        <div id = "nodes">
+            <button onclick="selectAll()" class="node selected bulk">Alle</button>
+            <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
+            <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
+        </div>
+        <button id="settings">Settings</button>
+    </div>
+    <div id = "grid"></div>
 </body>
+<script>
+    function updateGrid(){
+        const selectedNodex = [...document.querySelectorAll(".node.selected:not(.bulk)")].map(node=>node.innerText);
+        console.log(selectedNodex);
+    }
+    function selectAll(){
+        document.querySelectorAll(".node").forEach(node => node.classList.add("selected"));
+        updateGrid();
+    }
+    function toggleSelect(node){
+        if(node.classList.contains("selected")){
+            document.querySelector(".node.bulk").classList.remove("selected");
+        }
+        node.classList.toggle("selected");
+        updateGrid();
+    }
+</script>
 </html>

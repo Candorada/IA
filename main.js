@@ -1,8 +1,14 @@
 const express = require('express')
+const sqlite3 = require('sqlite3')
+const { open } = require('sqlite')
 const app = express()
 const fs = require('fs');
 const os = require('os');
-const port = 35231
+const port = 35231;
+let db = open({
+    filename: 'bistro.db',
+    driver: sqlite3.Database
+}); //must be awaited when used
 
 
 function getLocalIp() {
@@ -24,9 +30,14 @@ app.get('/', async (req, res) => {
         if (err) return res.status(404).send(err);
         res.send(html);
     })
+})
+app.get('')
+app.get(/files\/(.*)/, async (req, res) => {
+    let txt = req.params[0]
+    const options = {root: "./",dotfiles: 'deny',headers: {'x-timestamp': Date.now(),'x-sent': true}}
+    res.sendFile(`files/${txt}`, options)
     
 })
-
 app.listen(port, () => {
     const ip = getLocalIp()
     console.log(
