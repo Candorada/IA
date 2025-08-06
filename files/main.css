@@ -23,6 +23,7 @@
 }
 body{
     margin:0px;
+    user-select: none;
 }
 .node{
     border:none;
@@ -40,3 +41,19 @@ body{
 .bulk.selected{
     outline: .2rem solid gray;
 }
+
+#grid{
+    overflow: scroll;
+    display: flex;
+    flex-wrap: wrap;
+    gap:1rem;
+    padding:1rem;
+}
+.item {
+    padding:1rem;
+    flex: 1 0 7rem;
+    max-width: 8rem;
+    min-width: 7rem;
+    background-color: white;
+    aspect-ratio: 7/10;
+    }
