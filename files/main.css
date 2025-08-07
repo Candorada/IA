@@ -1,19 +1,32 @@
 :root{
     --topbar-height: 4rem;
     --mid-margin:.5rem;
+    --secondary-color: rgb(12,23,33);
+    --primary-color: rgb(20,30,50);
+    --secondary-contrast: rgb(150,200,230);
+    --radius: .2rem;
+    --gap:1rem;
 }
 #topbar{
-    background: red;
+    background: var(--secondary-color);
     height: var(--topbar-height);
     display: flex;
-}
-#grid{
-    background: blue;
-    height: calc(100vh - var(--topbar-height));
 }
 #settings{
     width: var(--topbar-height);
     height: var(--topbar-height);
+    background-color: transparent;
+    outline: none;
+    border:none;
+    padding: .5rem;
+    margin-right: .2rem;
+}
+#settings:hover{
+    cursor: pointer;
+}
+#settings > img{
+    width: 100%;
+    height: 100%;
 }
 #nodes{
     box-sizing: border-box;
@@ -26,34 +39,63 @@ body{
     user-select: none;
 }
 .node{
+    background-color: var(--secondary-color);
+    color: white;
     border:none;
     margin-right: var(--mid-margin);
     width: fit-content;
     height: 100%;
-    border-radius: .2rem;
+    border-radius: var(--radius);
 }
 .selected{
-    outline: 2px solid black;
+    outline: 2px solid var(--secondary-contrast);
 }
 .bulk{
     font-weight: bolder;
 }
 .bulk.selected{
-    outline: .2rem solid gray;
+    outline: var(--radius) solid var(--secondary-contrast);
 }
-
-#grid{
+#scroll{
+    box-sizing: border-box;
     overflow: scroll;
     display: flex;
-    flex-wrap: wrap;
-    gap:1rem;
     padding:1rem;
+    background-color: transparent;
+    height: calc(100vh - var(--topbar-height));
+    background-color: var(--primary-color);
 }
-.item {
-    padding:1rem;
-    flex: 1 0 7rem;
-    max-width: 8rem;
-    min-width: 7rem;
+#grid{
+    display: flex;
+    flex-wrap: wrap;
+    gap:var(--gap);
+    height: min-content;
+    width: 100%;
+}
+
+.item{
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    box-sizing: border-box;
     background-color: white;
-    aspect-ratio: 7/10;
-    }
+    max-width: 12rem;
+    min-width: 10rem;
+    aspect-ratio: 7/10 ;
+    position:relative;
+    background-image:var(--img);
+    overflow: hidden;
+    background-size:cover;
+    background-blend-mode:soft-light;
+    background-color: var(--secondary-color);
+    border-radius: var(--radius);
+    border: var(--radius) solid var(--secondary-contrast);
+}
+.itemInner{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+}

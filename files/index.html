@@ -13,86 +13,29 @@
             <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
             <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
         </div>
-        <button id="settings">Settings</button>
+        <button id="settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.6 -4.1 11.2 8.2">
+	<path d="M -5 3 L 5 3 Q 6 3.5 5 4 L -5 4 Q -6 3.5 -5 3 M -5 -0.5 L 5 -0.5 Q 6 0 5 0.5 L -5 0.5 Q -6 0 -5 -0.5 M -5 -4 L 5 -4 Q 6 -3.5 5 -3 L -5 -3 Q -6 -3.5 -5 -4" stroke="#000000" stroke-width="0" fill="#FFFFFF"/></svg></button>
     </div>
-    <div id = "grid">
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        <div class = "item">elm1</div>
-        
-        
+    <div id = "scroll">
+        <div id = "grid">
+
+        </div>
     </div>
 </body>
 <script>
+    function loadItem(name, stock, expected, min, img){
+        let im = img?img:"./err.jpg";
+        let node = document.createElement("div");
+        node.classList.add("item");
+        node.style.setProperty("--img", `url(${im})`);
+        node.innerHTML = `
+        <div class = "itemInner">
+            ${name}
+        </div>
+        `;
+        grid.appendChild(node);
+        return node;
+    }
     function updateGrid(){
         const selectedNodex = [...document.querySelectorAll(".node.selected:not(.bulk)")].map(node=>node.innerText);
         console.log(selectedNodex);
@@ -108,5 +51,10 @@
         node.classList.toggle("selected");
         updateGrid();
     }
+    let i =0;
+    setInterval(() => {
+        loadItem(i);
+        i++;
+    }, 100);
 </script>
 </html>
