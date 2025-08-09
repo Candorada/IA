@@ -23,8 +23,10 @@ body{
     background-color: var(--secondary-color);
     color:white;
     box-shadow: 1rem 0px 2rem var(--secondary-color);
+    overflow: scroll;
 }
 .title{
+    box-sizing: border-box;
     font-size: 2rem;
     text-align: center;
     border-bottom: var(--secondary-contrast) 1px solid;
