@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./files/settings.css">
+</head>
+<body>
+    <!--<a href="./">test</a>-->
+    <div id = "sidebar">
+        <div class = "title">Lager</div>
+        <!--[lager goes here]-->
+        <button id = "add"> + </button>
+    </div>
+    <div id = "body">
+        <div id = "einstellungen">
+            <div class="title">Einstellungen</div>
+            Email: <input type="email" id = "email" name="email" value="<!-- email -->">
+            <br>
+            Notification: <select name="" id="select" onchange="selectonchange(this)">
+                <option value="daily">Täglich um 19:00</option>
+                <option value="weakly">Wöchentlich am Sontag</option>
+                <option value="monthly">Monatlich</option>
+            </select>
+        </div>
+        <div id = "overlay" style = "display:none;">
+
+        </div>
+    </div>
+</body>
+<script src="./files/gridItemHtml.js"></script>
+<script>
+    function selectonchange(elm){
+        let selected = elm.value;
+        console.log(selected);
+    }
+    function selectlager(elm){
+        let nonSelected = [...document.querySelectorAll(".lager")].filter(node=>node.innerText != elm.innerText).map(node=>encodeURI(node.innerText)+"=false");
+        let queryStr = "/items?"+nonSelected.join("&");
+        if(overlay.style.display == "none"){
+            console.log(queryStr);
+            overlay.style.display = "block";
+            fetch(queryStr).then(res=>res.json()).then(json=>{
+                console.log(json);
+                overlay.innerHTML = "<div id = 'grid'>"+json.map(item=>gridItemHTML(item.name,item.stock,item.expected,item.min,item.img,true)).join("\n")+"</div>";
+            });
+        }else{
+            overlay.style.display = "none";
+        }
+    }
+</script>
+</html>

@@ -10,35 +10,34 @@
     <div id = topbar>
         <div id = "nodes">
             <button onclick="selectAll()" class="node selected bulk">Alle</button>
-            <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
-            <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
+            <!--[insert nodes here]-->
         </div>
-        <button id="settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.6 -4.1 11.2 8.2">
+        <button onclick = "window.location = './settings'" id="settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.6 -4.1 11.2 8.2">
 	<path d="M -5 3 L 5 3 Q 6 3.5 5 4 L -5 4 Q -6 3.5 -5 3 M -5 -0.5 L 5 -0.5 Q 6 0 5 0.5 L -5 0.5 Q -6 0 -5 -0.5 M -5 -4 L 5 -4 Q 6 -3.5 5 -3 L -5 -3 Q -6 -3.5 -5 -4" stroke="#000000" stroke-width="0" fill="#FFFFFF"/></svg></button>
     </div>
     <div id = "scroll">
         <div id = "grid">
-
+            <!--[insert grid here]-->
         </div>
     </div>
 </body>
+<script src = "./files/gridItemHtml.js"></script>
 <script>
-    function loadItem(name, stock, expected, min, img){
-        let im = img?img:"./err.jpg";
-        let node = document.createElement("div");
-        node.classList.add("item");
-        node.style.setProperty("--img", `url(${im})`);
-        node.innerHTML = `
-        <div class = "itemInner">
-            ${name}
-        </div>
-        `;
-        grid.appendChild(node);
-        return node;
-    }
     function updateGrid(){
-        const selectedNodex = [...document.querySelectorAll(".node.selected:not(.bulk)")].map(node=>node.innerText);
-        console.log(selectedNodex);
+        const selectedNodes = [...document.querySelectorAll(".node:not(.selected):not(.bulk)")].map(node=>node.innerText);
+        console.log(selectedNodes);
+        let str = "/items";
+        if(selectedNodes.length > 0){
+            str += "?";
+            str += selectedNodes.map(node=>`${node}=false`).join("&");
+        }
+        let html = ""
+        fetch(str).then(res=>res.json()).then(json=>{
+            json.forEach(item=>{
+                html += gridItemHTML(item.name,item.stock,item.expected,item.min,item.img); //defined in ./files/gridItemHtml.js
+            })
+            grid.innerHTML = html;
+        });
     }
     function selectAll(){
         document.querySelectorAll(".node").forEach(node => node.classList.add("selected"));
@@ -49,12 +48,14 @@
             document.querySelector(".node.bulk").classList.remove("selected");
         }
         node.classList.toggle("selected");
+        let nodes = [...document.querySelectorAll(".node.selected:not(.bulk)")];
+        let allNodes = [...document.querySelectorAll(".node:not(.bulk)")];
+        if(nodes.length >= allNodes.length){
+            document.querySelector(".node.bulk").classList.add("selected");
+        }
         updateGrid();
     }
-    let i =0;
-    setInterval(() => {
-        loadItem(i);
-        i++;
-    }, 100);
+
+
 </script>
 </html>

@@ -7,74 +7,82 @@
     --radius: .2rem;
     --gap:1rem;
     font-family:monospace;
-}
-#topbar{
-    background: var(--secondary-color);
-    height: var(--topbar-height);
-    display: flex;
-}
-#settings{
-    width: var(--topbar-height);
-    height: var(--topbar-height);
-    background-color: transparent;
-    outline: none;
-    border:none;
-    padding: .5rem;
-    margin-right: .2rem;
-}
-#settings:hover{
-    cursor: pointer;
-}
-#settings > img{
-    width: 100%;
-    height: 100%;
-}
-#nodes{
-    box-sizing: border-box;
-    width: 100%;
-    height: 100%;
-    padding: 1rem var(--mid-margin);
+    color:white
 }
 body{
     margin:0px;
-    user-select: none;
+    display: flex;
 }
-.node{
+#sidebar{
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1;
+    width: 20rem;
+    height: 100vh;
     background-color: var(--secondary-color);
-    color: white;
-    border:none;
-    margin-right: var(--mid-margin);
-    width: fit-content;
-    height: 100%;
-    border-radius: var(--radius);
+    color:white;
+    box-shadow: 1rem 0px 2rem var(--secondary-color);
 }
-.selected{
-    outline: 2px solid var(--secondary-contrast);
-}
-.bulk{
-    font-weight: bolder;
-    background-color: rgba(1,1,1,0.2);
-}
-.bulk.selected{
-    outline: var(--radius) solid var(--secondary-contrast);
-}
-#scroll{
-    box-sizing: border-box;
-    overflow: scroll;
-    display: flex;
-    padding:1rem;
-    background-color: transparent;
-    height: calc(100vh - var(--topbar-height));
-    background-color: var(--primary-color);
-}
-#grid{
-    display: flex;
-    flex-wrap: wrap;
-    gap:var(--gap);
-    height: min-content;
+.title{
+    font-size: 2rem;
+    text-align: center;
+    border-bottom: var(--secondary-contrast) 1px solid;
+    padding: 1rem;
     width: 100%;
 }
+#body{
+    position:relative;
+    z-index: 0;
+    width: calc(100% - 20rem);
+    height: 100vh;
+    background-color: var(--primary-color);
 
+}
+.lager{
+    cursor: pointer;
+    margin:1rem;
+    padding:1rem;
+    background-color: var(--primary-color);
+    border-radius: var(--radius);
+}
+#einstellungen{
+    width: calc(100% - 4rem);
+    height: calc(100% - 4rem);
+    margin:2rem;
+    background-color: transparent;
+}
+input[type="text"],input[type="password"],input[type="email"]{
+    background-color: transparent;
+    border:none;
+    outline: none;
+    margin-top: 1rem;
+    color:var(--secondary-contrast);
+}
+#add{
+    display: flex;
+    justify-content: center;
+    padding:.4rem;
+    align-self: center;
+    width: 2rem;
+    background-color: var(--primary-color);
+    border:none;
+    height: 2rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+#overlay{
+    padding: 1rem;
+    position: absolute;
+    top:5%;
+    left:5%;
+    width: 90%;
+    height: 90%;
+    background-color: var(--secondary-color);
+    border-radius: var(--radius);
+    border: 1px solid var(--secondary-contrast);
+    overflow: scroll;
+}
 .item{
     position: relative;
     flex-grow: 1;
@@ -103,18 +111,15 @@ body{
     height: 100%;
     display: flex;
 }
-.remove,.add{
+.delete{
     color:white;
     position:absolute;
     top:50%;
-    width: 40%;
+    width: 90%;
     height: 40%;
     margin:0% 5%;
     background-color: var(--secondary-color);
     border-radius: var(--radius);
-}
-.remove{
-    left:50%;
 }
 .stock{
     position: relative;
@@ -153,4 +158,11 @@ body{
     left:calc(var(--min) * 100%);
     width: 3px;
     background-color: black;
+}
+#grid{
+    display: flex;
+    flex-wrap: wrap;
+    gap:var(--gap);
+    height: min-content;
+    width: 100%;
 }
