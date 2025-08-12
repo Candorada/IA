@@ -63,7 +63,10 @@
         let storage = item.getAttribute("storage");
         sendRequest("/increaseStock",{name:text,storage:storage}).then(res=>{
             if(res.ok){
-                updateGrid();
+                let txtelm = item.querySelector(".overlaytext")
+                let txt = txtelm.innerText.split("/");
+                txtelm.innerText = (+txt[0] + 1)+"/"+txt[1]
+                item.querySelector(".inner").style = `--inner:${eval(txtelm.innerText)};`
             }
         })
     }
@@ -73,7 +76,10 @@
         let storage = item.getAttribute("storage");
         sendRequest("/decreaseStock",{name:text,storage:storage}).then(res=>{
             if(res.ok){
-                updateGrid();
+                let txtelm = item.querySelector(".overlaytext")
+                let txt = txtelm.innerText.split("/");
+                txtelm.innerText = (+txt[0] + -1)+"/"+txt[1]
+                item.querySelector(".inner").style = `--inner:${eval(txtelm.innerText)};`
             }
         })
     }

@@ -1,12 +1,82 @@
 const express = require('express')
-const sqlite3 = require('sqlite3').verbose();
-const { open } = require('sqlite')
+const cron = require("node-cron");
+const nodemailer = require("nodemailer");
 const app = express()
 app.use(express.json());
 const fs = require('fs');
 const os = require('os');
 const port = 35231;
+const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('bistro.db');
+const settings = {
+
+};
+async function getEmailText(){
+    let items =  await new Promise((r,j)=>db.all("SELECT * FROM Items WHERE stock < min",(err,rows)=>{
+        if(err){
+            j(err);
+        }else{
+            r(rows);
+        }
+    }))
+    if(items.length == 0) return "";
+    let str = `Diese Producte Mussen noch gekauft werden
+${items.map(item=>`- ${item.name} in ${item.storage} nur noch ${item.stock}/${item.expected}`).join("\n")}
+    `;
+    console.log(str);
+    return str;
+}
+const schedules = {
+    "immer":{cron:"* * * * *",subject:()=>"Direkte Lager Meldung",text:getEmailText,html:()=>{}},
+    "täglich":{cron:"0 19 * * *",subject:()=>"Tägliche Lager Meldung",text:getEmailText,html:()=>{}},
+    "wöchendlich":{cron:"0 0 * * 7 *",subject:()=>"Wöchentlich Lager Meldung Sontag",text:getEmailText,html:()=>{}},
+    "monatlich":{cron:"59 23 24-31 * 0",subject:()=>"Ende des Monats Lager Meldung Sontag",text:getEmailText,html:()=>{}},
+}
+let transporter = new Promise(async (r,j)=>{
+    r(nodemailer.createTransport({
+  service: (await getSetting("email")).split("@")[1]?.split(".")[0], // or SMTP server
+  secure:false,
+  auth: {
+    user: await getSetting("email"),
+    pass: await getSetting("password"),
+  },
+}))
+});
+function getNewCron(not){
+    return new Promise(async (r,j)=>{
+        let notification = not?not:await getSetting("notification");
+        r(cron.schedule(schedules[notification].cron, async () => {
+        console.log("Running email job...");
+        sendEmail(await schedules[notification].subject(),await schedules[notification].text(),await schedules[notification].html());
+        }));
+    })
+}
+let scheduledEvent = getNewCron();
+const settingCallBacks = {
+    "email":(newValue)=>{
+        transporter = nodemailer.createTransport({
+          service: newValue.split("@")[1]?.split(".")[0], // or SMTP server
+          secure:false,
+          auth: {
+            user: newValue,
+            pass: settings["password"],
+          },
+        });
+    },
+    "password":(newValue)=>{
+        transporter = nodemailer.createTransport({
+          service: settings["email"].split("@")[1]?.split(".")[0], // or SMTP server
+          auth: {
+            user: settings["email"],
+            pass: newValue,
+          },
+        });
+    },
+    "notification":async (newValue)=>{
+        (await scheduledEvent).destroy();
+        scheduledEvent = getNewCron(newValue);
+    },
+};
 db.run(`
   CREATE TABLE IF NOT EXISTS Lager (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +95,12 @@ db.run(`
         storage TEXT NOT NULL
     )
     `)
+db.run(`
+    CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    )
+`)
 function getLocalIp() {
     const interfaces = os.networkInterfaces();
     let localIP = '127.0.0.1'; // fallback
@@ -64,6 +140,20 @@ async function getGridItems(storages){
     })
     //return [{name: "name of thing 1 from shiit3",stock: 10,expected: 100,min: 20,img: "err.jpg"}];
 }
+async function getSetting(setting){
+    if(settings[setting]) return settings[setting];
+    return new Promise((r,j)=>{
+        db.get(`SELECT value FROM settings WHERE key = "${setting}"`,(err,row)=>{
+            if(err){
+                j(err);
+            }else{
+                let retVal = row?row.value:"";
+                settings[setting] = retVal;
+                r(retVal);
+            }
+        })
+    })
+}
 app.get('/', async (req, res) => {
     fs.readFile("files/index.html", "utf8", async function(err, html) {
         if (err) return res.status(404).send(err);
@@ -79,7 +169,6 @@ app.get('/', async (req, res) => {
         res.send(html);
     })
 })
-
 app.get(/files\/(.*)/, async (req, res) => {
     let txt = req.params[0]
     const options = {root: "./",dotfiles: 'deny',headers: {'x-timestamp': Date.now(),'x-sent': true}}
@@ -158,16 +247,36 @@ app.post("/setStock",async (req,res)=>{
         res.status(200).send("ok");
     })
 })
+app.post("/setSetting",async (req,res)=>{
+    let data = req.body;
+    let setting = data.setting;
+    let value = data.value;
+    db.run(`INSERT OR REPLACE INTO settings (key,value) VALUES ("${setting}","${value}")`,()=>{
+        res.status(200).send("ok");
+        settings[setting] = value;
+        settingCallBacks[setting]?settingCallBacks[setting](value):"";
+    })
+})
+app.get("getSetting",async (req,res)=>{
+    let setting = req.query.setting;
+    getSetting(setting).then((value)=>{
+        res.status(200).send(value);
+    }).catch(err=>{
+        res.status(500).send(err);
+    })
+})
 app.get("/settings",async (req,res)=>{
     fs.readFile("files/settings.html", "utf8", async function(err, html) {
         if (err) return res.status(404).send(err);
         let storages = await getStorages()
-        let notification = "weakly"
-        let email = "example@test.com"
+        let notification = await getSetting("notification").catch(()=>"weakly")
+        let email = await getSetting("email").catch(()=>"example@test.com")
+        let password = await getSetting("password").catch(()=>"")
         html = html
         .replace("<!--[lager goes here]-->",storages.map(storage=>lagerSettingsHTML(storage)).join("\n"))
         .replace("<!-- email -->",email)
-        .replace(`value="${notification}"`,`value = "${notification}" selected`)
+        .replace(`<!--[notifications go here]-->`,Object.keys(schedules).map(key=>`<option value="${key}" ${key == notification?"selected":""}>${schedules[key].subject()}</option>`).join("\n"))
+        .replace(`<!-- password -->`,password)
         res.send(html);
     })
 })
@@ -189,3 +298,26 @@ app.listen(port, () => {
  --                      -- `
     )
 })
+
+async function sendEmail(s,t,h) {
+    if(t == "") return;
+    let email = await getSetting("email");
+  try {
+    (await transporter).sendMail({
+      from: `Lager App <${email}>`,
+      to: email,
+      subject: s,
+      text: t,
+      html:h,
+    });
+    console.log("Email sent!");
+  } catch (err) {
+    console.error("Error sending email:", err);
+  }
+}
+sendEmail("Lager app online","Die Lager app ist online");
+
+(async ()=>{
+    let notification = await getSetting("notification");
+    sendEmail(await schedules[notification].subject(),await schedules[notification].text(),await schedules[notification].html());
+})()

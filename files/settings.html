@@ -16,12 +16,10 @@
     <div id = "body">
         <div id = "einstellungen">
             <div class="title">Einstellungen</div>
-            Email: <input type="email" id = "email" name="email" value="<!-- email -->">
-            <br>
+            Email: <input type="email" id = "email" name="email" value="<!-- email -->" onchange = "emailchange(this)"><br>
+            Email-App-password: <input type="password" id = "password" name="password" value="<!-- password -->" onchange = "passwordchange(this)"><br>
             Notification: <select name="" id="select" onchange="selectonchange(this)">
-                <option value="daily">Täglich um 19:00</option>
-                <option value="weakly">Wöchentlich am Sontag</option>
-                <option value="monthly">Monatlich</option>
+                <!--[notifications go here]-->
             </select>
         </div>
         <div id = "overlay" style = "display:none;">
@@ -37,6 +35,18 @@
     }
     function selectonchange(elm){
         let selected = elm.value;
+        sendRequest("/setSetting",{setting:"notification",value:selected})
+    }
+    function emailchange(elm){
+        let email = elm.value;
+        console.log(email);
+        sendRequest("/setSetting",{setting:"email",value:email})
+    }
+    function passwordchange(elm){
+        let password = elm.value;
+        sendRequest("/setSetting",{setting:"password",value:password})
+        console.log(password);
+        
     }
     function selectlager(lager){
         let nonSelected = [...document.querySelectorAll(".lager > .lagerButton")].filter(node=>node.innerText != lager).map(node=>encodeURI(node.innerText)+"=false");
