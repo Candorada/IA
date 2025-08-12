@@ -11,7 +11,7 @@
     <div id = "sidebar">
         <div class = "title">Lager</div>
         <!--[lager goes here]-->
-        <button id = "add"> + </button>
+        <button id = "add" onclick = "createLager()"> + </button>
     </div>
     <div id = "body">
         <div id = "einstellungen">
@@ -30,24 +30,158 @@
     </div>
 </body>
 <script src="./files/gridItemHtml.js"></script>
+<script src="./files/lagerSettingsHTML.js"></script>
 <script>
+    async function sendRequest(url, body) {
+        return fetch(url,{method:"POST",headers:{'Accept': 'application/json','Content-Type': 'application/json'},body:JSON.stringify(body)})
+    }
     function selectonchange(elm){
         let selected = elm.value;
-        console.log(selected);
     }
-    function selectlager(elm){
-        let nonSelected = [...document.querySelectorAll(".lager")].filter(node=>node.innerText != elm.innerText).map(node=>encodeURI(node.innerText)+"=false");
+    function selectlager(lager){
+        let nonSelected = [...document.querySelectorAll(".lager > .lagerButton")].filter(node=>node.innerText != lager).map(node=>encodeURI(node.innerText)+"=false");
         let queryStr = "/items?"+nonSelected.join("&");
-        if(overlay.style.display == "none"){
-            console.log(queryStr);
+        if(overlay.style.display == "none" || overlay.querySelector(".title").innerText != lager){
             overlay.style.display = "block";
             fetch(queryStr).then(res=>res.json()).then(json=>{
-                console.log(json);
-                overlay.innerHTML = "<div id = 'grid'>"+json.map(item=>gridItemHTML(item.name,item.stock,item.expected,item.min,item.img,true)).join("\n")+"</div>";
+                overlay.innerHTML = `<div class = "title">${lager}</div><div id = 'grid'>`+json.map(item=>gridItemHTML(item.name,item.stock,item.expected,item.min,item.img,true,lager)).join("\n")+`<div class = "item insertItem" onclick = "addItem('${lager}')">+</div>`+"</div>";
             });
         }else{
             overlay.style.display = "none";
         }
+    }
+    function toggleOverlay(){
+        if(overlay.style.display == "none"){
+            overlay.style.display = "block";
+        }else{
+            overlay.style.display = "none";
+            overlay.innerHTML = "";
+        }
+    }
+    function createLager(){
+        toggleOverlay();
+        overlay.innerHTML = `
+        <div class = "title">Lager erstellen</div>
+        <input type="text" id = "lagerName" placeholder="Lager Name">
+        <br>
+        <button onclick = "createLagerSubmit(this)" class = "confirm"> Create </button>
+        `;
+    }
+    function deleteLager(elm){
+        sendRequest("/deleteLager",{name:elm.parentElement.querySelector(".lagerButton").innerText}).then(res=>{
+            if(res.ok){
+                console.log("Lager gelöscht");
+            }
+        })
+        elm.parentElement.remove();
+    }
+    function createLagerSubmit(self){
+        let text = self.parentElement.querySelector("#lagerName").value;
+        self.parentElement.querySelector(".title").innerText += "...";
+        self.disabled = true;
+        sendRequest("/createLager",{name:text}).then(res=>{
+            if(res.ok){
+                toggleOverlay();
+                var elm = document.createElement("DIV")
+                elm.innerHTML = lagerSettingsHTML(text);
+                document.querySelector("#sidebar").insertBefore(elm.querySelector(".lager"),add)
+            }
+        })
+    }
+    function addItem(storage){
+        overlay.innerHTML = `<div class = "title">Object in "${storage}" hinzufügen</div>
+        Name: <input type="text" id = "itemName" placeholder="Name"><br>
+        Bild: <input type="file" id = "itemBild" accept="image/png, image/jpeg" /><br>
+        Lieferant Email: <input type="email" id = "itemEmail" placeholder="Lieferant Email"><br>
+        Menge: <input type="number" id = "itemMenge" placeholder="3" pattern = "\s*\d+\s*"> / <input type="number" id = "itemErwartung" placeholder="100" pattern = "\s*\d+\s*"><br>
+        Mindestbestand: <input type="number" id = "itemMin" placeholder="20" pattern = "\s*\d+\s*"><br>
+        <input type = "button" id = "itemSubmit" onclick = "createItem(this.parentElement,'${storage}')" value = "Fertig">
+        `;
+    }
+    function sendItemRequest(elm, img,storage) {
+        sendRequest("/createItem", {
+            name: elm.querySelector("#itemName").value,
+            img: img,
+            email: elm.querySelector("#itemEmail").value,
+            stock: elm.querySelector("#itemMenge").value,
+            min: elm.querySelector("#itemMin").value,
+            expected: elm.querySelector("#itemErwartung").value,
+            storage: storage
+        }).then(()=>{
+            selectlager(storage);
+        });
+    }
+    function createItem(elm,storage){
+        let img = elm.querySelector("#itemBild").files[0];
+        let reader = new FileReader();
+        if(img){
+            reader.readAsDataURL(img);
+            reader.onloadend = function () {
+                // Create an image element to load the file
+                let image = new Image();
+                image.src = reader.result;
+
+                image.onload = function () {
+                    // Resize the image to a smaller size (e.g., 500px max width)
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
+                    let maxWidth = 500;
+                    let maxHeight = 500;
+                    let width = image.width;
+                    let height = image.height;
+
+                    // Maintain aspect ratio
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    // Set the canvas size and draw the resized image
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(image, 0, 0, width, height);
+
+                    // Convert resized image to base64
+                    let resizedBase64 = canvas.toDataURL("image/jpeg", 0.7); // Using JPEG with compression
+
+                    // Send the request with the resized image
+                    sendItemRequest(elm, resizedBase64,storage);
+                }
+            };
+        }else{
+            sendItemRequest(elm,"err.jpg",storage);
+        }
+    }
+    function deleteItem(elm){
+        let item = elm.parentElement.parentElement.parentElement;
+        let storage = item.parentElement.parentElement.querySelector(".title").innerText;
+        let name = item.getAttribute("name");
+        sendRequest("/deleteItem",{name:name,storage:storage}).then(res=>{
+            if(res.ok){
+                elm.parentElement.parentElement.parentElement.remove();
+            }
+        })
+    }
+    function setStock(elm){
+        let item = elm.parentElement.parentElement.parentElement.parentElement.parentElement;
+        let name = item.getAttribute("name");
+        let storage = item.getAttribute("storage");
+        let value = elm.value;
+        sendRequest("/setStock",{name:name,storage:storage,stock:value})
+    }
+    function setExpectedStock(elm){
+        let item = elm.parentElement.parentElement.parentElement.parentElement.parentElement;
+        let name = item.getAttribute("name");
+        let storage = item.getAttribute("storage");
+        let value = elm.value;
+        sendRequest("/setExpectedStock",{name:name,storage:storage,expected:value})
     }
 </script>
 </html>

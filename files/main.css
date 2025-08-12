@@ -88,6 +88,7 @@ body{
     background-image:var(--img);
     overflow: hidden;
     background-size:cover;
+    background-position: center;
     background-blend-mode:soft-light;
     background-color: var(--secondary-color);
     border-radius: var(--radius);

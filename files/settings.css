@@ -13,7 +13,12 @@ body{
     margin:0px;
     display: flex;
 }
+#sidebar::-webkit-scrollbar{
+    display: none;
+}
 #sidebar{
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -42,19 +47,33 @@ body{
 
 }
 .lager{
-    cursor: pointer;
     margin:1rem;
-    padding:1rem;
     background-color: var(--primary-color);
     border-radius: var(--radius);
+    position:relative;
 }
+.lagerDelete{
+    cursor:pointer;
+    background-color: darkred;
+    position: absolute;
+    pointer-events: auto;
+    left:100%;
+    top:50%;
+    transform: translate(0,-50%);
+}
+.lagerButton{
+    padding:1rem;
+    cursor: pointer;
+    display: flex;
+}
+
 #einstellungen{
     width: calc(100% - 4rem);
     height: calc(100% - 4rem);
     margin:2rem;
     background-color: transparent;
 }
-input[type="text"],input[type="password"],input[type="email"]{
+input:not([type="button"]){
     background-color: transparent;
     border:none;
     outline: none;
@@ -100,6 +119,7 @@ input[type="text"],input[type="password"],input[type="email"]{
     background-size:cover;
     background-blend-mode:soft-light;
     background-color: var(--secondary-color);
+    background-position: center;
     border-radius: var(--radius);
     border: var(--radius) solid var(--secondary-contrast);
 }
@@ -161,10 +181,35 @@ input[type="text"],input[type="password"],input[type="email"]{
     width: 3px;
     background-color: black;
 }
+.confirm{
+    padding:.4rem;
+    width: 2rem;
+    background-color: var(--primary-color);
+    border:none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    width: max-content;
+}
 #grid{
     display: flex;
     flex-wrap: wrap;
     gap:var(--gap);
-    height: min-content;
-    width: 100%;
+}
+.insertItem{
+    border: none;
+    justify-content: center;
+    align-items: center;
+    font-size: 10rem;
+    cursor: pointer;
+}
+.insertItem:hover{
+    background-image: linear-gradient(to right,var(--secondary-color),var(--primary-color));
+}
+.settingModify{
+    width: calc(50% - .5rem);
+    display: inline;
+    height: 1rem;
+    color:white;
+    margin: 0px !important;
+    padding: 0px !important;
 }
