@@ -32,16 +32,35 @@ const schedules = {
     "wöchendlich":{cron:"0 0 * * 7 *",subject:()=>"Wöchentlich Lager Meldung Sontag",text:getEmailText,html:()=>{}},
     "monatlich":{cron:"59 23 24-31 * 0",subject:()=>"Ende des Monats Lager Meldung Sontag",text:getEmailText,html:()=>{}},
 }
-let transporter = new Promise(async (r,j)=>{
-    r(nodemailer.createTransport({
-  service: (await getSetting("email")).split("@")[1]?.split(".")[0], // or SMTP server
-  secure:false,
-  auth: {
-    user: await getSetting("email"),
-    pass: await getSetting("password"),
-  },
-}))
+
+let transporter;
+function updateTransporter(){
+    transporter = new Promise(async (r,j)=>{
+    try{
+        let n = nodemailer.createTransport({
+        service: (await getSetting("email")).split("@")[1]?.split(".")[0], // or SMTP server
+        secure:false,
+        auth: {
+            user: await getSetting("email"),
+            pass: await getSetting("password"),
+        },
+        });
+        n.on('error', (err) => {
+        console.log("wtf is going on")
+        if (err.code === 'EAUTH') {
+            console.error('Auth error event from transporter:', err);
+            mailerIsValid = false; // your flag to disable future sends
+        } else {
+            console.error('Other transporter error:', err);
+        }
+        });
+        r(n)
+    }catch( err){
+        r("Error creating transporter"+err);
+    }
 });
+}
+updateTransporter();
 function getNewCron(not){
     return new Promise(async (r,j)=>{
         let notification = not?not:await getSetting("notification");
@@ -54,23 +73,10 @@ function getNewCron(not){
 let scheduledEvent = getNewCron();
 const settingCallBacks = {
     "email":(newValue)=>{
-        transporter = nodemailer.createTransport({
-          service: newValue.split("@")[1]?.split(".")[0], // or SMTP server
-          secure:false,
-          auth: {
-            user: newValue,
-            pass: settings["password"],
-          },
-        });
+        updateTransporter();
     },
     "password":(newValue)=>{
-        transporter = nodemailer.createTransport({
-          service: settings["email"].split("@")[1]?.split(".")[0], // or SMTP server
-          auth: {
-            user: settings["email"],
-            pass: newValue,
-          },
-        });
+        updateTransporter();
     },
     "notification":async (newValue)=>{
         (await scheduledEvent).destroy();
@@ -253,8 +259,10 @@ app.post("/setSetting",async (req,res)=>{
     let value = data.value;
     db.run(`INSERT OR REPLACE INTO settings (key,value) VALUES ("${setting}","${value}")`,()=>{
         res.status(200).send("ok");
+        console.log(setting,value);
         settings[setting] = value;
         settingCallBacks[setting]?settingCallBacks[setting](value):"";
+        sendEmail("Setting Wurde geändert",`Der Wert für ${setting} wurde geändert zu ${value}`);
     })
 })
 app.get("getSetting",async (req,res)=>{
@@ -292,7 +300,7 @@ app.get("/items",async (req,res)=>{
 app.listen(port, () => {
     const ip = getLocalIp()
     console.log(
-` -- Starting Application -- 
+` -- Application Started -- 
     \x1b[1mLocal: \x1b[0m\x1b[1;34;34mhttp://localhost:${port}\x1b[0m
     \x1b[1mNetwork: \x1b[0m\x1b[1;34;34mhttp://${ip}:${port}\x1b[0m
  --                      -- `
@@ -303,7 +311,7 @@ async function sendEmail(s,t,h) {
     if(t == "") return;
     let email = await getSetting("email");
   try {
-    (await transporter).sendMail({
+    await (await transporter).sendMail({
       from: `Lager App <${email}>`,
       to: email,
       subject: s,
@@ -313,11 +321,7 @@ async function sendEmail(s,t,h) {
     console.log("Email sent!");
   } catch (err) {
     console.error("Error sending email:", err);
+    return;
   }
 }
 sendEmail("Lager app online","Die Lager app ist online");
-
-(async ()=>{
-    let notification = await getSetting("notification");
-    sendEmail(await schedules[notification].subject(),await schedules[notification].text(),await schedules[notification].html());
-})()
