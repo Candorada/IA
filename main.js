@@ -299,12 +299,14 @@ app.get("/items",async (req,res)=>{
 })
 app.listen(port, () => {
     const ip = getLocalIp()
-    console.log(
-` -- Application Started -- 
+let text = ` -- Application Started -- 
     \x1b[1mLocal: \x1b[0m\x1b[1;34;34mhttp://localhost:${port}\x1b[0m
     \x1b[1mNetwork: \x1b[0m\x1b[1;34;34mhttp://${ip}:${port}\x1b[0m
  --                      -- `
-    )
+ sendEmail("Lager app online","Die Lager app ist online\n"+`
+    http://localhost:${port}
+    http://${ip}:${port}`);
+ console.log(text);
 })
 
 async function sendEmail(s,t,h) {
@@ -324,4 +326,3 @@ async function sendEmail(s,t,h) {
     return;
   }
 }
-sendEmail("Lager app online","Die Lager app ist online");
