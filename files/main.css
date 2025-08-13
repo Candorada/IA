@@ -1,5 +1,5 @@
 :root{
-    --topbar-height: 4rem;
+    --topbar-height: 8rem;
     --mid-margin:.5rem;
     --secondary-color: rgb(12,23,33);
     --primary-color: rgb(20,30,50);
@@ -14,8 +14,10 @@
     display: flex;
 }
 #settings{
+    box-sizing: border-box;
     width: var(--topbar-height);
     height: var(--topbar-height);
+    aspect-ratio: 1/1;
     background-color: transparent;
     outline: none;
     border:none;
@@ -38,8 +40,11 @@
 body{
     margin:0px;
     user-select: none;
+    background-color: var(--primary-color);
 }
 .node{
+    font-size: 2rem;
+    padding: 1rem;
     background-color: var(--secondary-color);
     color: white;
     border:none;
@@ -76,13 +81,14 @@ body{
 }
 
 .item{
+    font-size: 2rem;
     position: relative;
     flex-grow: 1;
     display: flex;
     box-sizing: border-box;
     background-color: white;
-    max-width: 12rem;
-    min-width: 10rem;
+    max-width: 18rem;
+    min-width: 14rem;
     aspect-ratio: 7/10 ;
     position:relative;
     background-image:var(--img);

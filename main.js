@@ -8,6 +8,7 @@ const os = require('os');
 const port = 35231;
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('bistro.db');
+let netWorkURL = "http://localhost:"+port;
 function createTables(db) {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
@@ -90,7 +91,7 @@ const defualtSettings = {
     "password":"",
     "notification":"immer",
 }
-async function getEmailText(){
+async function getEmailHTML(){
     let items =  await new Promise((r,j)=>db.all("SELECT * FROM Items WHERE stock < min",(err,rows)=>{
         if(err){
             j(err);
@@ -99,17 +100,48 @@ async function getEmailText(){
         }
     }))
     if(items.length == 0) return "";
-    let str = `Diese Producte Mussen noch gekauft werden
-${items.map(item=>`- ${item.name} in ${item.storage} nur noch ${item.stock}/${item.expected}`).join("\n")}
-    `;
+    let str = `
+<html>
+  <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
+    <h2 style="color: #333; margin-bottom: 10px;">
+      Diese Produkte müssen noch gekauft werden
+    </h2>
+    <table style="border-collapse: collapse; width: 100%; background-color: #fff; border: 1px solid #ddd;">
+      <thead>
+        <tr>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Name</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Lager</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Bestand</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Erwartet</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Kontakt</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map(item => `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.storage}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.stock}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.expected}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.email}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+    <p style="margin-top: 20px; font-size: 12px; color: #666;">
+      Dies ist eine automatische Nachricht – bitte nicht direkt darauf antworten.
+    </p>
+  </body>
+</html>
+`;
     console.log(str);
     return str;
 }
 const schedules = {
-    "immer":{cron:"* * * * *",subject:()=>"Direkte Lager Meldung",text:getEmailText,html:()=>{}},
-    "täglich":{cron:"0 19 * * *",subject:()=>"Tägliche Lager Meldung",text:getEmailText,html:()=>{}},
-    "wöchendlich":{cron:"0 0 * * 7 *",subject:()=>"Wöchentlich Lager Meldung Sontag",text:getEmailText,html:()=>{}},
-    "monatlich":{cron:"59 23 24-31 * 0",subject:()=>"Ende des Monats Lager Meldung Sontag",text:getEmailText,html:()=>{}},
+    "immer":{cron:"* * * * *",subject:()=>"Direkte Lager Meldung",text:()=>{},html:getEmailHTML},
+    "täglich":{cron:"0 19 * * *",subject:()=>"Tägliche Lager Meldung",text:()=>{},html:getEmailHTML},
+    "wöchendlich":{cron:"0 0 * * 7 *",subject:()=>"Wöchentlich Lager Meldung Sontag",text:()=>{},html:getEmailHTML},
+    "monatlich":{cron:"59 23 24-31 * 0",subject:()=>"Ende des Monats Lager Meldung Sontag",text:()=>{},html:getEmailHTML},
 }
 
 let transporter;
@@ -232,7 +264,8 @@ app.get('/', async (req, res) => {
             storages
             .map(storage=>`<button onclick="toggleSelect(this)" class="node selected">${storage}</button>`)
             .join("\n")
-        );
+        )
+        .replace("<!--[network url]-->",netWorkURL);
         res.send(html);
     })
 })
@@ -359,13 +392,15 @@ app.get("/items",async (req,res)=>{
     res.status(200).json(json);
 })
 app.get("/db",async (req,res)=>{
-    res.sendFile("bistro.db");
+       const options = {root: "./",dotfiles: 'deny',headers: {'x-timestamp': Date.now(),'x-sent': true}}
+    res.sendFile("./bistro.db",options);
 })
 createTables(db).then(()=>{
     scheduledEvent = getNewCron();
     updateTransporter();
     app.listen(port, () => {
         const ip = getLocalIp()
+    netWorkURL = "http://"+ip+":"+port;
     let text = ` -- Application Started -- 
         \x1b[1mLocal: \x1b[0m\x1b[1;34;34mhttp://localhost:${port}\x1b[0m
         \x1b[1mNetwork: \x1b[0m\x1b[1;34;34mhttp://${ip}:${port}\x1b[0m

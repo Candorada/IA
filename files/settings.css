@@ -105,21 +105,22 @@ input:not([type="button"]){
     overflow: scroll;
 }
 .item{
+    font-size: 2rem;
     position: relative;
     flex-grow: 1;
     display: flex;
     box-sizing: border-box;
     background-color: white;
-    max-width: 12rem;
-    min-width: 10rem;
+    max-width: 18rem;
+    min-width: 14rem;
     aspect-ratio: 7/10 ;
     position:relative;
     background-image:var(--img);
     overflow: hidden;
     background-size:cover;
+    background-position: center;
     background-blend-mode:soft-light;
     background-color: var(--secondary-color);
-    background-position: center;
     border-radius: var(--radius);
     border: var(--radius) solid var(--secondary-contrast);
 }
