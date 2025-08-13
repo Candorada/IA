@@ -85,6 +85,11 @@ function createTables(db) {
 const settings = {
 
 };
+const defualtSettings = {
+    "email":"example@test.com",
+    "password":"",
+    "notification":"immer",
+}
 async function getEmailText(){
     let items =  await new Promise((r,j)=>db.all("SELECT * FROM Items WHERE stock < min",(err,rows)=>{
         if(err){
@@ -108,6 +113,7 @@ const schedules = {
 }
 
 let transporter;
+let scheduledEvent;
 function updateTransporter(){
     transporter = new Promise(async (r,j)=>{
     try{
@@ -137,13 +143,13 @@ function updateTransporter(){
 function getNewCron(not){
     return new Promise(async (r,j)=>{
         let notification = not?not:await getSetting("notification");
+        console.log("notification", await getSetting("notification"));
         r(cron.schedule(schedules[notification].cron, async () => {
         console.log("Running email job...");
         sendEmail(await schedules[notification].subject(),await schedules[notification].text(),await schedules[notification].html());
         }));
     })
 }
-let scheduledEvent = getNewCron();
 const settingCallBacks = {
     "email":(newValue)=>{
         updateTransporter();
@@ -201,11 +207,19 @@ async function getSetting(setting){
     return new Promise((r,j)=>{
         db.get(`SELECT value FROM settings WHERE key = "${setting}"`,(err,row)=>{
             if(err){
-                j(err);
+                if(setting in defualtSettings){
+                    settings[setting] = defualtSettings[setting];
+                    r(defualtSettings[setting]);
+                }else{
+                    j(err);
+                }
             }else{
-                let retVal = row?row.value:"";
+                let retVal = row?row.value:undefined;
+                if(!retVal) retVal = defualtSettings[setting];
                 settings[setting] = retVal;
+                console.log(`testststst[${retVal}]`);
                 r(retVal);
+
             }
         })
     })
@@ -348,6 +362,7 @@ app.get("/items",async (req,res)=>{
     res.status(200).json(json);
 })
 createTables(db).then(()=>{
+    scheduledEvent = getNewCron();
     updateTransporter();
     app.listen(port, () => {
         const ip = getLocalIp()
