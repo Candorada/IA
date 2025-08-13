@@ -8,6 +8,30 @@ const os = require('os');
 const port = 35231;
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('bistro.db');
+db.run(`
+  CREATE TABLE IF NOT EXISTS Lager (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
+  )
+`);
+db.run(`
+    CREATE TABLE IF NOT EXISTS Items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        img TEXT NOT NULL,
+        email TEXT NOT NULL,
+        stock INTEGER NOT NULL,
+        min INTEGER NOT NULL,
+        expected INTEGER NOT NULL,
+        storage TEXT NOT NULL
+    )
+    `)
+db.run(`
+    CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    )
+`)
 const settings = {
 
 };
@@ -83,30 +107,7 @@ const settingCallBacks = {
         scheduledEvent = getNewCron(newValue);
     },
 };
-db.run(`
-  CREATE TABLE IF NOT EXISTS Lager (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
-  )
-`);
-db.run(`
-    CREATE TABLE IF NOT EXISTS Items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        img TEXT NOT NULL,
-        email TEXT NOT NULL,
-        stock INTEGER NOT NULL,
-        min INTEGER NOT NULL,
-        expected INTEGER NOT NULL,
-        storage TEXT NOT NULL
-    )
-    `)
-db.run(`
-    CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-    )
-`)
+
 function getLocalIp() {
     const interfaces = os.networkInterfaces();
     let localIP = '127.0.0.1'; // fallback
