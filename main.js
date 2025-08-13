@@ -126,7 +126,6 @@ function updateTransporter(){
         },
         });
         n.on('error', (err) => {
-        console.log("wtf is going on")
         if (err.code === 'EAUTH') {
             console.error('Auth error event from transporter:', err);
             mailerIsValid = false; // your flag to disable future sends
@@ -143,7 +142,6 @@ function updateTransporter(){
 function getNewCron(not){
     return new Promise(async (r,j)=>{
         let notification = not?not:await getSetting("notification");
-        console.log("notification", await getSetting("notification"));
         r(cron.schedule(schedules[notification].cron, async () => {
         console.log("Running email job...");
         sendEmail(await schedules[notification].subject(),await schedules[notification].text(),await schedules[notification].html());
@@ -217,7 +215,6 @@ async function getSetting(setting){
                 let retVal = row?row.value:undefined;
                 if(!retVal) retVal = defualtSettings[setting];
                 settings[setting] = retVal;
-                console.log(`testststst[${retVal}]`);
                 r(retVal);
 
             }
