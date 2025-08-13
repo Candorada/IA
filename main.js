@@ -8,30 +8,80 @@ const os = require('os');
 const port = 35231;
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('bistro.db');
-db.run(`
-  CREATE TABLE IF NOT EXISTS Lager (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
-  )
-`);
-db.run(`
-    CREATE TABLE IF NOT EXISTS Items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        img TEXT NOT NULL,
-        email TEXT NOT NULL,
-        stock INTEGER NOT NULL,
-        min INTEGER NOT NULL,
-        expected INTEGER NOT NULL,
-        storage TEXT NOT NULL
-    )
-    `)
-db.run(`
-    CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-    )
-`)
+function createTables(db) {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS Lager (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL
+        )
+      `, (err) => { if (err) reject(err); });
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS Items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          img TEXT NOT NULL,
+          email TEXT NOT NULL,
+          stock INTEGER NOT NULL,
+          min INTEGER NOT NULL,
+          expected INTEGER NOT NULL,
+          storage TEXT NOT NULL
+        )
+      `, (err) => { if (err) reject(err); });
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        )
+      `, (err) => { if (err) reject(err); });
+
+      // All runs are queued; to resolve after all, use 'db.exec' or track completions
+      // Since db.run callbacks may be called asynchronously, let's track completion count:
+
+      let completed = 0;
+      const total = 3;
+
+      function checkDone(err) {
+        if (err) reject(err);
+        completed++;
+        if (completed === total) resolve();
+      }
+
+      // Re-run with the checkDone callback
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS Lager (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL
+        )
+      `, checkDone);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS Items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          img TEXT NOT NULL,
+          email TEXT NOT NULL,
+          stock INTEGER NOT NULL,
+          min INTEGER NOT NULL,
+          expected INTEGER NOT NULL,
+          storage TEXT NOT NULL
+        )
+      `, checkDone);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        )
+      `, checkDone);
+
+    });
+  });
+}
 const settings = {
 
 };
@@ -84,7 +134,6 @@ function updateTransporter(){
     }
 });
 }
-updateTransporter();
 function getNewCron(not){
     return new Promise(async (r,j)=>{
         let notification = not?not:await getSetting("notification");
@@ -298,17 +347,21 @@ app.get("/items",async (req,res)=>{
     let json = await getGridItems(storages);
     res.status(200).json(json);
 })
-app.listen(port, () => {
-    const ip = getLocalIp()
-let text = ` -- Application Started -- 
-    \x1b[1mLocal: \x1b[0m\x1b[1;34;34mhttp://localhost:${port}\x1b[0m
-    \x1b[1mNetwork: \x1b[0m\x1b[1;34;34mhttp://${ip}:${port}\x1b[0m
- --                      -- `
- sendEmail("Lager app online","Die Lager app ist online\n"+`
-    http://localhost:${port}
-    http://${ip}:${port}`);
- console.log(text);
+createTables(db).then(()=>{
+    updateTransporter();
+    app.listen(port, () => {
+        const ip = getLocalIp()
+    let text = ` -- Application Started -- 
+        \x1b[1mLocal: \x1b[0m\x1b[1;34;34mhttp://localhost:${port}\x1b[0m
+        \x1b[1mNetwork: \x1b[0m\x1b[1;34;34mhttp://${ip}:${port}\x1b[0m
+    --                      -- `
+    sendEmail("Lager app online","Die Lager app ist online\n"+`
+        http://localhost:${port}
+        http://${ip}:${port}`);
+    console.log(text);
+    })
 })
+
 
 async function sendEmail(s,t,h) {
     if(t == "") return;
