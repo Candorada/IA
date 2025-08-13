@@ -99,6 +99,13 @@ async function getEmailHTML(){
             r(rows);
         }
     }))
+    let allItems = await new Promise((r,j)=>db.all("SELECT * FROM Items",(err,rows)=>{
+        if(err){
+            j(err);
+        }else{
+            r(rows);
+        }
+    }))
     if(items.length == 0) return "";
     let str = `
 <html>
@@ -109,6 +116,7 @@ async function getEmailHTML(){
     <table style="border-collapse: collapse; width: 100%; background-color: #fff; border: 1px solid #ddd;">
       <thead>
         <tr>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Bild</th>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Name</th>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Lager</th>
           <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Bestand</th>
@@ -119,6 +127,34 @@ async function getEmailHTML(){
       <tbody>
         ${items.map(item => `
           <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;"><img src="${item.img}" style="width: 100px; height: 100px;"></td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.storage}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.stock}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.expected}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${item.email}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+    <h2 style="color: #333; margin-bottom: 10px;">
+      Dies ist die gesamte Lager Liste
+    </h2>
+    <table style="border-collapse: collapse; width: 100%; background-color: #fff; border: 1px solid #ddd;">
+      <thead>
+        <tr>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Bild</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Name</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Lager</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Bestand</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Erwartet</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Kontakt</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${allItems.map(item => `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;"><img src="${item.img}" style="width: 100px; height: 100px;"></td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.storage}</td>
             <td style="border: 1px solid #ddd; padding: 8px;">${item.stock}</td>
