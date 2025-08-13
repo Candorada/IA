@@ -358,6 +358,9 @@ app.get("/items",async (req,res)=>{
     let json = await getGridItems(storages);
     res.status(200).json(json);
 })
+app.get("/db",async (req,res)=>{
+    res.sendFile("bistro.db");
+})
 createTables(db).then(()=>{
     scheduledEvent = getNewCron();
     updateTransporter();
