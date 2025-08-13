@@ -106,7 +106,7 @@ async function getEmailHTML(){
             r(rows);
         }
     }))
-    if(items.length == 0) return "";
+    if(items.length == 0 && allItems.length == 0) return "";
     let str = `
 <html>
   <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
