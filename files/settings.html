@@ -31,7 +31,14 @@
 <script src="./files/lagerSettingsHTML.js"></script>
 <script>
     async function sendRequest(url, body) {
-        return fetch(url,{method:"POST",headers:{'Accept': 'application/json','Content-Type': 'application/json'},body:JSON.stringify(body)})
+        return fetch(url,{
+            method:"POST",
+            headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body:JSON.stringify(body)
+        })
     }
     function selectonchange(elm){
         let selected = elm.value;
