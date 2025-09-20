@@ -6,7 +6,14 @@ function gridItemHTML(name, stock, expected, min, img, isSetting = false,storage
                 <div class = "buttonWrapper">
                     <div class = "stock">
                         <div class = "inner" style = "--inner:${Math.min(1,stock/expected)};"></div>
-                        <div class = "overlaytext">${isSetting?`<input type = "text" value = "${stock}" class = "settingModify" onchange = "setStock(this)">`:stock}/${isSetting?`<input type = "text" value = "${expected}" class = "settingModify" onchange="setExpectedStock(this)">`:expected}</div>
+                        <div class = "overlaytext">
+                            ${isSetting?`
+                            <input type = "text" value = "${stock}" class = "settingModify" onchange = "setStock(this)">
+                            `:
+                            stock}/${
+                            isSetting?`
+                            <input type = "text" value = "${expected}" class = "settingModify" onchange="setExpectedStock(this)">`
+                            :expected}</div>
                         <div class = "minindicator" style = "--min:${min/expected};"></div>
                     </div>
                     ${isSetting?`
