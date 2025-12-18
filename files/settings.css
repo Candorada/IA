@@ -1,0 +1,215 @@
+:root{
+    --topbar-height: 4rem;
+    --mid-margin:.5rem;
+    --secondary-color: rgb(12,23,33);
+    --primary-color: rgb(20,30,50);
+    --secondary-contrast: rgb(150,200,230);
+    --radius: .2rem;
+    --gap:1rem;
+    font-family:monospace;
+    color:white
+}
+body{
+    margin:0px;
+    display: flex;
+}
+#sidebar::-webkit-scrollbar{
+    display: none;
+}
+#sidebar{
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1;
+    width: 20rem;
+    height: 100vh;
+    background-color: var(--secondary-color);
+    color:white;
+    box-shadow: 1rem 0px 2rem var(--secondary-color);
+    overflow: scroll;
+}
+.title{
+    box-sizing: border-box;
+    font-size: 2rem;
+    text-align: center;
+    border-bottom: var(--secondary-contrast) 1px solid;
+    padding: 1rem;
+    width: 100%;
+}
+#body{
+    position:relative;
+    z-index: 0;
+    width: calc(100% - 20rem);
+    height: 100vh;
+    background-color: var(--primary-color);
+
+}
+.lager{
+    margin:1rem;
+    background-color: var(--primary-color);
+    border-radius: var(--radius);
+    position:relative;
+}
+.lagerDelete{
+    cursor:pointer;
+    background-color: darkred;
+    position: absolute;
+    pointer-events: auto;
+    left:100%;
+    top:50%;
+    transform: translate(0,-50%);
+}
+.lagerButton{
+    padding:1rem;
+    cursor: pointer;
+    display: flex;
+}
+
+#einstellungen{
+    width: calc(100% - 4rem);
+    height: calc(100% - 4rem);
+    margin:2rem;
+    background-color: transparent;
+}
+input:not([type="button"]){
+    background-color: transparent;
+    border:none;
+    outline: none;
+    margin-top: 1rem;
+    color:var(--secondary-contrast);
+}
+#add{
+    display: flex;
+    justify-content: center;
+    padding:.4rem;
+    align-self: center;
+    width: 2rem;
+    background-color: var(--primary-color);
+    border:none;
+    height: 2rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+#overlay{
+    padding: 1rem;
+    position: absolute;
+    top:5%;
+    left:5%;
+    width: 90%;
+    height: 90%;
+    background-color: var(--secondary-color);
+    border-radius: var(--radius);
+    border: 1px solid var(--secondary-contrast);
+    overflow: scroll;
+}
+.item{
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    box-sizing: border-box;
+    background-color: white;
+    max-width: 12rem;
+    min-width: 10rem;
+    aspect-ratio: 7/10 ;
+    position:relative;
+    background-image:var(--img);
+    overflow: hidden;
+    background-size:cover;
+    background-blend-mode:soft-light;
+    background-color: var(--secondary-color);
+    background-position: center;
+    border-radius: var(--radius);
+    border: var(--radius) solid var(--secondary-contrast);
+}
+.itemInner{
+    color:white;
+    aspect-ratio: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+.delete{
+    color:white;
+    position:absolute;
+    top:50%;
+    width: 90%;
+    height: 40%;
+    margin:0% 5%;
+    background-color: var(--secondary-color);
+    border-radius: var(--radius);
+}
+.stock{
+    position: relative;
+    width: 100%;
+    height: 10%;
+    margin:5% 5% 0% 5%;
+    background-color: red;
+}
+.buttonWrapper{
+    display: flex;
+    flex-wrap: wrap;
+    position: absolute;
+    width: 100%;
+    height: 30%;
+    display: flex;
+    background-color: blue;
+    align-self: flex-end;
+}
+.inner{
+    top:0%;
+    left:0%;
+    height: 100%;
+    background-color: tan;
+    width: calc(var(--inner) * 100%);
+    position:absolute;
+}
+.overlaytext{
+    top:100%;
+    position: absolute;
+    z-index: 2;
+}
+.minindicator{
+    position: absolute;
+    top:0%;
+    height: 100%;
+    left:calc(var(--min) * 100%);
+    width: 3px;
+    background-color: black;
+}
+.confirm{
+    padding:.4rem;
+    width: 2rem;
+    background-color: var(--primary-color);
+    border:none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    width: max-content;
+}
+#grid{
+    display: flex;
+    flex-wrap: wrap;
+    gap:var(--gap);
+}
+.insertItem{
+    border: none;
+    justify-content: center;
+    align-items: center;
+    font-size: 10rem;
+    cursor: pointer;
+}
+.insertItem:hover{
+    background-image: linear-gradient(to right,var(--secondary-color),var(--primary-color));
+}
+.settingModify{
+    width: calc(50% - .5rem);
+    display: inline;
+    height: 1rem;
+    color:white;
+    margin: 0px !important;
+    padding: 0px !important;
+}

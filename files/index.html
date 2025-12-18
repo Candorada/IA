@@ -6,21 +6,41 @@
     <title>Document</title>
     <link rel="stylesheet" href="./files/main.css">
 </head>
-<body>
+<body network-url = "<!--[network url]-->"></body>
     <div id = topbar>
         <div id = "nodes">
             <button onclick="selectAll()" class="node selected bulk">Alle</button>
-            <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
-            <button onclick="toggleSelect(this)" class="node selected">shiiit</button>
+            <!--[insert nodes here]-->
         </div>
-        <button id="settings">Settings</button>
+        <button onclick = "window.location = './settings'" id="settings" style = "display:none;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-5.6 -4.1 11.2 8.2">
+	<path d="M -5 3 L 5 3 Q 6 3.5 5 4 L -5 4 Q -6 3.5 -5 3 M -5 -0.5 L 5 -0.5 Q 6 0 5 0.5 L -5 0.5 Q -6 0 -5 -0.5 M -5 -4 L 5 -4 Q 6 -3.5 5 -3 L -5 -3 Q -6 -3.5 -5 -4" stroke="#000000" stroke-width="0" fill="#FFFFFF"/></svg></button>
     </div>
-    <div id = "grid"></div>
+    <div id = "scroll">
+        <div id = "grid">
+            <!--[insert grid here]-->
+        </div>
+    </div>
 </body>
+<script src = "./files/gridItemHtml.js"></script>
+<script src = "./files/qrCode.js"></script>
 <script>
+    async function sendRequest(url, body) {
+        return fetch(url,{method:"POST",headers:{'Accept': 'application/json','Content-Type': 'application/json'},body:JSON.stringify(body)})
+    }
     function updateGrid(){
-        const selectedNodex = [...document.querySelectorAll(".node.selected:not(.bulk)")].map(node=>node.innerText);
-        console.log(selectedNodex);
+        const selectedNodes = [...document.querySelectorAll(".node:not(.selected):not(.bulk)")].map(node=>node.innerText);
+        let str = "/items";
+        if(selectedNodes.length > 0){
+            str += "?";
+            str += selectedNodes.map(node=>`${node}=false`).join("&");
+        }
+        let html = ""
+        fetch(str).then(res=>res.json()).then(json=>{
+            json.forEach(item=>{
+                html += gridItemHTML(item.name,item.stock,item.expected,item.min,item.img,false,item.storage); //defined in ./files/gridItemHtml.js
+            })
+            grid.innerHTML = html;
+        });
     }
     function selectAll(){
         document.querySelectorAll(".node").forEach(node => node.classList.add("selected"));
@@ -31,7 +51,50 @@
             document.querySelector(".node.bulk").classList.remove("selected");
         }
         node.classList.toggle("selected");
+        let nodes = [...document.querySelectorAll(".node.selected:not(.bulk)")];
+        let allNodes = [...document.querySelectorAll(".node:not(.bulk)")];
+        if(nodes.length >= allNodes.length){
+            document.querySelector(".node.bulk").classList.add("selected");
+        }
         updateGrid();
     }
+    function plus(elm){
+        let item = elm.parentElement.parentElement.parentElement;
+        let text = item.getAttribute("name");
+        let storage = item.getAttribute("storage");
+        sendRequest("/increaseStock",{name:text,storage:storage}).then(res=>{
+            if(res.ok){
+                let txtelm = item.querySelector(".overlaytext")
+                let txt = txtelm.innerText.split("/");
+                txtelm.innerText = (+txt[0] + 1)+"/"+txt[1]
+                item.querySelector(".inner").style = `--inner:${eval(txtelm.innerText)};`
+            }
+        })
+    }
+    function minus(elm){
+        let item = elm.parentElement.parentElement.parentElement;
+        let text = item.getAttribute("name");
+        let storage = item.getAttribute("storage");
+        sendRequest("/decreaseStock",{name:text,storage:storage}).then(res=>{
+            if(res.ok){
+                let txtelm = item.querySelector(".overlaytext")
+                let txt = txtelm.innerText.split("/");
+                txtelm.innerText = (+txt[0] + -1)+"/"+txt[1]
+                item.querySelector(".inner").style = `--inner:${eval(txtelm.innerText)};`
+            }
+        })
+    }
+    let settings = document.querySelector("#settings");
+    settings.outerHTML = `<div id = "settings"></div>`
+    new QRCode(document.querySelector("#settings"), {
+        text: document.body.getAttribute("network-url"),
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+
+
 </script>
 </html>
