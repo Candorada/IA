@@ -23,7 +23,7 @@
             </select>
         </div>
         <div id = "overlay" style = "display:none;">
-
+            
         </div>
     </div>
 </body>
@@ -92,6 +92,18 @@
         })
         elm.parentElement.remove();
     }
+    document.addEventListener("submit", function (e) {
+    const form = e.target;
+
+
+    e.preventDefault(); // stop reload
+
+    if (!form.checkValidity()) {
+    form.reportValidity(); // 🔔 "This field is required"
+    return;
+    }
+
+    });
     function createLagerSubmit(self){
         let text = self.parentElement.querySelector("#lagerName").value;
         self.parentElement.querySelector(".title").innerText += "...";
@@ -106,14 +118,17 @@
         })
     }
     function addItem(storage){
-        overlay.innerHTML = `<div class = "title">Object in "${storage}" hinzufügen</div>
-        Name: <input type="text" id = "itemName" placeholder="Name"><br>
+        overlay.innerHTML = `<form onsubmit = "createItem(this,'${storage}')">
+        <div class = "title">Object in "${storage}" hinzufügen</div>
+        Name: <input type="text" id = "itemName" placeholder="Name" required><br>
         Bild: <input type="file" id = "itemBild" accept="image/png, image/jpeg" /><br>
         Lieferant Email: <input type="email" id = "itemEmail" placeholder="Lieferant Email"><br>
-        Menge: <input type="number" id = "itemMenge" placeholder="3" pattern = "\s*\d+\s*"> / <input type="number" id = "itemErwartung" placeholder="100" pattern = "\s*\d+\s*"><br>
-        Mindestbestand: <input type="number" id = "itemMin" placeholder="20" pattern = "\s*\d+\s*"><br>
-        <input type = "button" id = "itemSubmit" onclick = "createItem(this.parentElement,'${storage}')" value = "Fertig">
+        Menge: <input type="number" id = "itemMenge" placeholder="3" pattern = "\s*\d+\s*" required> / <input type="number" id = "itemErwartung" placeholder="100" pattern = "\s*\d+\s*" required><br>
+        Mindestbestand: <input type="number" id = "itemMin" placeholder="20" pattern = "\s*\d+\s*" required><br>
+        <input type = "submit" id = "itemSubmit" value = "Fertig">
+        </form>
         `;
+        
     }
     function sendItemRequest(elm, img,storage) {
         sendRequest("/createItem", {

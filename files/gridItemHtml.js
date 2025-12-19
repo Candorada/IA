@@ -10,7 +10,7 @@ function gridItemHTML(name, stock, expected, min, img, isSetting = false,storage
                             ${isSetting?`
                             <input type = "text" value = "${stock}" class = "settingModify" onchange = "setStock(this)">
                             `:
-                            stock}/${
+                            stock}<span>/</span>${
                             isSetting?`
                             <input type = "text" value = "${expected}" class = "settingModify" onchange="setExpectedStock(this)">`
                             :expected}</div>

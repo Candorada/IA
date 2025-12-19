@@ -206,7 +206,7 @@ input:not([type="button"]){
     background-image: linear-gradient(to right,var(--secondary-color),var(--primary-color));
 }
 .settingModify{
-    width: calc(50% - .5rem);
+    width: calc(50% - 1rem);
     display: inline;
     height: 1rem;
     color:white;
