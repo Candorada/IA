@@ -345,7 +345,8 @@ app.post("/createItem",async (req,res)=>{
 app.post("/deleteItem",async (req,res)=>{
     let data = req.body;
     let name = data.name;
-    db.run(`DELETE FROM Items WHERE name = "${name}" AND storage = "${data.storage}"`,()=>{
+    let storage = data.storage;
+    db.run(`DELETE FROM Items WHERE name = "${name}" AND storage = "${storage}"`,()=>{
         res.status(200).send("ok");
     })
 })
