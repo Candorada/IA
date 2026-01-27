@@ -41,6 +41,7 @@ body{
     margin:0px;
     user-select: none;
     background-color: var(--primary-color);
+    overflow: hidden;
 }
 .node{
     font-size: 2rem;
